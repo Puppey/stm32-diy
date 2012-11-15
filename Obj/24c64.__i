@@ -1,1 +1,0 @@
--c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\BSP -I..\FWlib\inc -I..\App -I..\OS\uCOS-II\Source -I..\OS\uCOS-II\Ports -I "f:\Keil\ARM\INC" -I "f:\Keil\ARM\INC\ST\STM32F10x" -o "..\Obj\24c64.o" --omf_browse "..\Obj\24c64.crf" --depend "..\Obj\24c64.d" "..\App\24C64.c"

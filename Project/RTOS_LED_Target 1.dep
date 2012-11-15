@@ -1,7 +1,7 @@
 Dependencies for Project 'RTOS_LED', Target 'Target 1': (DO NOT MODIFY !)
 F (..\OS\uCOS-II\Source\os_cfg_r.h)(0x4C3418AA)()
 F (..\App\app_cfg.h)(0x4C33F250)()
-F (..\App\main.c)(0x509D2B9B)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\BSP -I..\FWlib\inc -I..\App -I..\OS\uCOS-II\Source -I..\OS\uCOS-II\Ports -I "f:\Keil\ARM\INC" -I "f:\Keil\ARM\INC\ST\STM32F10x" -o "..\Obj\main.o" --omf_browse "..\Obj\main.crf" --depend "..\Obj\main.d")
+F (..\App\main.c)(0x50A4D326)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\BSP -I..\FWlib\inc -I..\App -I..\OS\uCOS-II\Source -I..\OS\uCOS-II\Ports -I "f:\Keil\ARM\INC" -I "f:\Keil\ARM\INC\ST\STM32F10x" -o "..\Obj\main.o" --omf_browse "..\Obj\main.crf" --depend "..\Obj\main.d")
 I (..\App\includes.h)(0x4C3406C8)
 I (..\FWlib\inc\stm32f10x_lib.h)(0x48EDAFE0)
 I (..\FWlib\inc\stm32f10x_map.h)(0x48EDAFE0)
