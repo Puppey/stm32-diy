@@ -21,3 +21,4 @@ Obj/*
 Lst/*
 *.deb
 *.dep
+*.bak
