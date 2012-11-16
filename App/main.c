@@ -4,12 +4,13 @@
 #include "24C64.h"
 #include <stdio.h>
 
+//#define		CH375HF_NO_CODE		1
+
 static OS_STK   TaskStartStk[TASK_START_STK_SIZE];	// 定义起始任务堆栈大小
 static OS_STK   Task1Stk[TASK1_STK_SIZE];			// 定义任务堆栈大小
 
 static void TaskStart(void *p_arg);
 static void Task1(void *p_arg);
-
 
 void Delay(vu32 nCount); 
 void Delayms (vu32 m);
@@ -103,7 +104,6 @@ void DS1302_Test()
 //	DS1302_WriteTime(timedat);
 	while (1)         //主循环
   	{
-		memset(timedat, 0, sizeof(timedat));
   		DS1302_ReadTime(timedat);
 		sprintf((char*)timebuf, "%02d-%02d %02d:%02d:%02d", timedat[2], timedat[3], timedat[4], timedat[5], timedat[6]);
 		LCD_Clear();
@@ -133,12 +133,35 @@ void AT24C64_Test(void)
 	}
 }
 
+extern void CH375_Test(void);
+
+extern void USART_Config(void);
+extern void USART_SendChar(unsigned short ch);
+extern unsigned short USART_ReadChar(void);
+
+void UART_Test()
+{
+	unsigned short ch = 0x66;
+
+	USART_Config();
+	while(1)
+	{
+		USART_SendChar(ch);
+
+		ch = USART_ReadChar();
+
+		OSTimeDlyHMSM(0, 0, 0, 10);
+	}
+}
+
 static void Task1(void *p_arg)
 {     
    while(1)
    {
 //   		AT24C64_Test();	
-		DS1302_Test(); 
+//		DS1302_Test(); 
+		CH375_Test();
+//		UART_Test();
  	}
 }
 

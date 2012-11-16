@@ -430,6 +430,16 @@
               <FileType>1</FileType>
               <FilePath>..\App\24C64.c</FilePath>
             </File>
+            <File>
+              <FileName>CH375.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App\CH375.c</FilePath>
+            </File>
+            <File>
+              <FileName>USART.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App\USART.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -659,6 +669,21 @@
               <FileName>Readme.txt</FileName>
               <FileType>5</FileType>
               <FilePath>..\Readme.txt</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>CH375</GroupName>
+          <Files>
+            <File>
+              <FileName>CH375HFM.H</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\App\CH375LIB\ARM32\FILELIBM_CX\CH375HFM.H</FilePath>
+            </File>
+            <File>
+              <FileName>CH375HFM.LIB</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\App\CH375LIB\ARM32\FILELIBM_CX\CH375HFM.LIB</FilePath>
             </File>
           </Files>
         </Group>

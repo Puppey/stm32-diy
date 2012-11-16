@@ -65,8 +65,6 @@ static void SysTick_Configuration(void)
 */
 void GPIO_Configuration(void)
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
-
 	RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOA | 
 							RCC_APB2Periph_GPIOB | 
 							RCC_APB2Periph_GPIOC | 
@@ -74,52 +72,6 @@ void GPIO_Configuration(void)
 							RCC_APB2Periph_GPIOE, ENABLE  );
 	GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);	 //释放JTAG脚作为普通IO口
    	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);	 //根据使用的引脚修改 
-
-	//配置GPIOA为推挽输出，驱动LCD1602
-	// PA0->E
-	// PA1->RW
-	// PA2->RS
-	// PA4-7 -> DB4-7
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | 
-								  GPIO_Pin_1 | 
-								  GPIO_Pin_2 | 
-								  GPIO_Pin_3 | 
-								  GPIO_Pin_4 | 
-								  GPIO_Pin_5 | 
-								  GPIO_Pin_6 ;
-   	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
-	GPIO_Init(GPIOA, &GPIO_InitStructure);			       // 选择A端口
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 ;
-   	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_OD;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
-	GPIO_Init(GPIOA, &GPIO_InitStructure);			       // 选择A端口
-
-#if 0
-     // 17路指示灯显示
-  	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 ; 	  
-  	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_PP;		   // 推挽输出
-  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
-  	GPIO_Init(GPIOA, &GPIO_InitStructure);			       // 选择A端口
-    
-  	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8| GPIO_Pin_9 ; 	  
-  	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_PP;		   // 推挽输出
-  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
-  	GPIO_Init(GPIOC, &GPIO_InitStructure);			       // 选择C端口
-  
-  	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9|  GPIO_Pin_10| GPIO_Pin_11| 
-                                  GPIO_Pin_12| GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15 ;  
-  	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_PP;		   // 推挽输出
-  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
-  	GPIO_Init(GPIOD, &GPIO_InitStructure);			       // 选择C端口
- 
-  	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12| GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15 ; 
-  	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_PP;		   // 推挽输出
-  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
-  	GPIO_Init(GPIOB, &GPIO_InitStructure);			       // 选择B端口
-#endif
 }
 
 /*
@@ -277,34 +229,31 @@ void TIM1_Configuration(void)
 */
 void USART1_Configuration(void)
 {
-
-USART_InitTypeDef USART_InitStructure;
-USART_ClockInitTypeDef  USART_ClockInitStructure;
-RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1 , ENABLE  );
-
-USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;			// 时钟低电平活动
-USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;				// 时钟低电平
-USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;				// 时钟第二个边沿进行数据捕获
-USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;		// 最后一位数据的时钟脉冲不从SCLK输出
-/* Configure the USART1 synchronous paramters */
-USART_ClockInit(USART1, &USART_ClockInitStructure);					// 时钟参数初始化设置
-																	 
-USART_InitStructure.USART_BaudRate = BAUDRATE1;						  // 波特率为：115200
-USART_InitStructure.USART_WordLength = USART_WordLength_8b;			  // 8位数据
-USART_InitStructure.USART_StopBits = USART_StopBits_1;				  // 在帧结尾传输1个停止位
-USART_InitStructure.USART_Parity = USART_Parity_No ;				  // 奇偶失能
-USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	// 硬件流控制失能
-
-USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;		  // 发送使能+接收使能
-/* Configure USART1 basic and asynchronous paramters */
-USART_Init(USART1, &USART_InitStructure);
-    
-  /* Enable USART1 */
-USART_ClearFlag(USART1, USART_IT_RXNE); 			//清中断，以免一启用中断后立即产生中断
-USART_ITConfig(USART1,USART_IT_RXNE, ENABLE);		//使能USART1中断源
-USART_Cmd(USART1, ENABLE);							//USART1总开关：开启 
-
-
+	USART_InitTypeDef USART_InitStructure;
+	USART_ClockInitTypeDef  USART_ClockInitStructure;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1 , ENABLE  );
+	
+	USART_ClockInitStructure.USART_Clock = USART_Clock_Disable;			// 时钟低电平活动
+	USART_ClockInitStructure.USART_CPOL = USART_CPOL_Low;				// 时钟低电平
+	USART_ClockInitStructure.USART_CPHA = USART_CPHA_2Edge;				// 时钟第二个边沿进行数据捕获
+	USART_ClockInitStructure.USART_LastBit = USART_LastBit_Disable;		// 最后一位数据的时钟脉冲不从SCLK输出
+	/* Configure the USART1 synchronous paramters */
+	USART_ClockInit(USART1, &USART_ClockInitStructure);					// 时钟参数初始化设置
+																		 
+	USART_InitStructure.USART_BaudRate = BAUDRATE1;						  // 波特率为：115200
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;			  // 8位数据
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;				  // 在帧结尾传输1个停止位
+	USART_InitStructure.USART_Parity = USART_Parity_No ;				  // 奇偶失能
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	// 硬件流控制失能
+	
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;		  // 发送使能+接收使能
+	/* Configure USART1 basic and asynchronous paramters */
+	USART_Init(USART1, &USART_InitStructure);
+	    
+	  /* Enable USART1 */
+	USART_ClearFlag(USART1, USART_IT_RXNE); 			//清中断，以免一启用中断后立即产生中断
+	USART_ITConfig(USART1,USART_IT_RXNE, ENABLE);		//使能USART1中断源
+	USART_Cmd(USART1, ENABLE);							//USART1总开关：开启 
 }
 
 /*
@@ -319,23 +268,22 @@ USART_Cmd(USART1, ENABLE);							//USART1总开关：开启
 
 void USART4_Configuration(void)
 {
-
-USART_InitTypeDef USART_InitStructure;
-RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE  );
-												 
-USART_InitStructure.USART_BaudRate = BAUDRATE4;						  // 波特率为：57600
-USART_InitStructure.USART_WordLength = USART_WordLength_8b;			  // 8位数据
-USART_InitStructure.USART_StopBits = USART_StopBits_1;				  // 在帧结尾传输1个停止位
-USART_InitStructure.USART_Parity = USART_Parity_No ;				  // 奇偶失能
-USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	// 硬件流控制失能
-
-USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;		  // 发送使能+接收使能
-
-USART_Init(UART4, &USART_InitStructure);
-    
- 
-USART_ClearFlag(UART4, USART_IT_RXNE); 			//清中断，以免一启用中断后立即产生中断
-USART_ITConfig(UART4,USART_IT_RXNE, ENABLE);		//使能USART4中断源
-USART_Cmd(UART4, ENABLE);							//USART4总开关：开启 
+	USART_InitTypeDef USART_InitStructure;
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE  );
+													 
+	USART_InitStructure.USART_BaudRate = BAUDRATE4;						  // 波特率为：57600
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;			  // 8位数据
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;				  // 在帧结尾传输1个停止位
+	USART_InitStructure.USART_Parity = USART_Parity_No ;				  // 奇偶失能
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	// 硬件流控制失能
+	
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;		  // 发送使能+接收使能
+	
+	USART_Init(UART4, &USART_InitStructure);
+	    
+	 
+	USART_ClearFlag(UART4, USART_IT_RXNE); 			//清中断，以免一启用中断后立即产生中断
+	USART_ITConfig(UART4,USART_IT_RXNE, ENABLE);		//使能USART4中断源
+	USART_Cmd(UART4, ENABLE);							//USART4总开关：开启 
 }
 

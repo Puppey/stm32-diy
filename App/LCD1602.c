@@ -83,6 +83,30 @@ void LCD_Light(int enable)
 
 void LCD_Init(void)
 {
+	GPIO_InitTypeDef GPIO_InitStructure;
+	//配置GPIOA为推挽输出，驱动LCD1602
+	// PA0->E
+	// PA1->RW
+	// PA2->RS
+	// PA4-7 -> DB4-7
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | 
+								  GPIO_Pin_1 | 
+								  GPIO_Pin_2 | 
+								  GPIO_Pin_3 | 
+								  GPIO_Pin_4 | 
+								  GPIO_Pin_5 | 
+								  GPIO_Pin_6 ;
+   	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
+	GPIO_Init(GPIOA, &GPIO_InitStructure);			       // 选择A端口
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 ;
+   	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_OD;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		   // 最高输出速率50MHz
+	GPIO_Init(GPIOA, &GPIO_InitStructure);			       // 选择A端口
+
+
 	EN_CLR;
 	RW_CLR;
 	RS_CLR;
@@ -105,8 +129,14 @@ void LCD_Init(void)
 
 void LCD_Clear(void)
 {
+	unsigned char *p = framebuffer, *end = framebuffer + sizeof(framebuffer)/sizeof(framebuffer[0]);
+
 	LCD_Write_Byte(1, 0x01);
-	memset(framebuffer, 0, sizeof(framebuffer));
+	
+	for(; p < end; p++)
+	{
+		*p = 0;
+	}
 }
 
 void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s) 
