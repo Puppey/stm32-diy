@@ -1,40 +1,129 @@
 #include "includes.h"
 
+static u8 CH375_ReadData()
+{
+	return (u8)GPIO_ReadInputData(GPIOA);
+}
+
+static void CH375_WriteData(u8 dat)
+{
+	GPIO_WriteBit(GPIOA, (u16)dat, Bit_SET);
+	GPIO_WriteBit(GPIOA, (u16)~dat, Bit_RESET);	
+}
+
+#define CH375_Set_A0(enable)	\
+	GPIO_WriteBit(GPIOB, GPIO_Pin_0, (enable) ? Bit_SET : Bit_RESET)
+
+#define CH375_Set_RD(enable)	\
+	GPIO_WriteBit(GPIOB, GPIO_Pin_2, (enable) ? Bit_SET : Bit_RESET)
+
+#define CH375_Set_WR(enable)	\
+	GPIO_WriteBit(GPIOB, GPIO_Pin_1, (enable) ? Bit_SET : Bit_RESET)
+
+#define CH375_Set_CS(enable)	\
+	GPIO_WriteBit(GPIOB, GPIO_Pin_13, (enable) ? Bit_SET : Bit_RESET)
+
+#define CH375_Read_INT()	\
+	GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_12)
+
 #define NO_DEFAULT_DELAY_100US	1
 #define NO_DEFAULT_DELAY_WRITE	1
-#define CH375_INT_WIRE GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7)
+//#define CH375_INT_WIRE CH375_Read_INT()
 	
 #include "CH375LIB\ARM32\FILELIBM_CX\CH375HFM.h"
 
-
-extern void USART_SendChar(unsigned short ch);
-extern unsigned short USART_ReadChar(void);
-extern void USART_Config(void);
-extern void USART_ChangeBaudRate(unsigned int rate);
+static void Delay_Us(u16 myUs)   
+{
+  u16 i;
+  while(myUs--)
+  {
+    i=6;
+    while(i--);
+  }
+}
+ 
+static void Delay_Ms(u16 myMs)
+{
+  u16 i;
+  while(myMs--)
+  {
+    i=7200;
+    while(i--);
+  }
+}
 
 void xDelay100uS( void )
 {
-	OSTimeDlyHMSM(0, 0, 0, 10);
+	Delay_Us(200);
 }
 
 void xDelayAfterWrite( void )			/* 写操作后延时 */
 {
-	OSTimeDlyHMSM(0, 0, 0, 10);
+	Delay_Us(2000);
 }
 
 void xWriteCH375Cmd( UINT8 mCmd )
 {
-	USART_SendChar((1 << 8) | mCmd);
+	Delay_Us(4);
+	CH375_WriteData(mCmd);
+	CH375_Set_A0(1);
+	CH375_Set_CS(0);
+	CH375_Set_WR(0);
+	Delay_Us(10);
+	CH375_Set_WR(1);
+	CH375_Set_CS(1);
+	CH375_Set_A0(0);
+	CH375_WriteData(0xff);
+	Delay_Us(4);
 }
 
 void xWriteCH375Data( UINT8 mData )
 {
-	USART_SendChar(mData);
+	Delay_Us(4);
+	CH375_WriteData(mData);
+	CH375_Set_A0(0);
+	CH375_Set_CS(0);
+	CH375_Set_WR(0);
+	Delay_Us(10);
+	CH375_Set_WR(1);
+	CH375_Set_CS(1);
+	CH375_Set_A0(0);
+	CH375_WriteData(0xff);
+	Delay_Us(4);	
 }
 
 UINT8 xReadCH375Data( void )
 {
-	return (UINT8)USART_ReadChar();
+	UINT8 data;
+
+	Delay_Us(4);
+	CH375_WriteData(0xff);
+	CH375_Set_A0(0);
+	CH375_Set_CS(0);
+	CH375_Set_RD(0);
+	Delay_Us(10);
+	data = CH375_ReadData();
+	CH375_Set_RD(1);
+	CH375_Set_CS(1);
+	Delay_Us(4);
+	return data;
+}
+
+u8 xReadCH375Cmd(void)
+{
+	UINT8 data;
+
+	Delay_Us(4);
+	CH375_WriteData(0xff);
+	CH375_Set_A0(1);
+	CH375_Set_CS(0);
+	CH375_Set_RD(0);
+	Delay_Us(10);
+	data = CH375_ReadData();
+	CH375_Set_RD(1);
+	CH375_Set_CS(1);
+	Delay_Us(4);
+	return data;	
 }
 
 UINT8 gErr = 0;
@@ -49,84 +138,80 @@ static int mStrcpy(char *dst, char *src)
 	return p - dst - 1;
 }
 
+void CH375_PortInit(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | 
+						   RCC_APB2Periph_GPIOB,
+						   ENABLE  );
+
+	/* Configure GPIOA Open Drian Output */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 |
+								  GPIO_Pin_1 |
+								  GPIO_Pin_2 |
+								  GPIO_Pin_3 |
+								  GPIO_Pin_4 |
+								  GPIO_Pin_5 |
+								  GPIO_Pin_6 |
+								  GPIO_Pin_7;								  			
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;		 
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	/* Configure CS#, RD#, WR#, A0 to PP output */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 |
+								  GPIO_Pin_1 |
+								  GPIO_Pin_2 |
+								  GPIO_Pin_13;
+							  			
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;		 
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	/* Configure INT# to IPU input */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;							  			
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;		 
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	CH375_Set_CS(1);
+	CH375_Set_RD(1);
+	CH375_Set_WR(1);
+	CH375_Set_A0(1);	
+}
+
 void CH375_Test(void)
 {
 	UINT8 err = 0;
 	UINT32 i = 0;
 
-	GPIO_InitTypeDef GPIO_InitStructure;
-	USART_InitTypeDef USART_InitStructure;
-												 
-	USART_InitStructure.USART_BaudRate = 115200;						  // 波特率为：115200
-	USART_InitStructure.USART_WordLength = USART_WordLength_9b;			  // 8位数据
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;				  // 在帧结尾传输1个停止位
-	USART_InitStructure.USART_Parity = USART_Parity_No ;				  // 奇偶失能
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	// 硬件流控制失能
-	
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;		  // 发送使能+接收使能
-	/* Configure USART1 basic and asynchronous paramters */
-//	USART_Init(USART1, &USART_InitStructure);
-	    
-	  /* Enable USART1 */
-//	USART_ClearFlag(USART1, USART_IT_RXNE); 			//清中断，以免一启用中断后立即产生中断
-//	USART_ITConfig(USART1,USART_IT_RXNE, DISABLE);		//使能USART1中断源
-//	USART_Cmd(USART1, ENABLE);	
+	CH375_PortInit();
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,
-						   ENABLE  );
-
-	/* Configure USART1 Tx (PA.09) as alternate function push-pull */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;			
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;		 
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-	USART_Config();	
 //	xWriteCH375Cmd(CMD_RESET_ALL);
-	OSTimeDlyHMSM(0, 0, 1, 0);
+//	OSTimeDlyHMSM(0, 0, 1, 0);
 
 	err = CH375LibInit();
-	
-	xWriteCH375Cmd(CMD_SET_BAUDRATE);	// set Baudrate to 2000000
-	xWriteCH375Data(0x3);
 
-	xWriteCH375Data(0xcc);
-
-	OSTimeDlyHMSM(0, 0, 1, 0);
-	USART_Cmd(USART1, DISABLE);
-	
-	USART_Init(USART1, &USART_InitStructure);	
-	USART_Cmd(USART1, ENABLE);
-#if 0
-	err = xReadCH375Data();
-
-	xWriteCH375Cmd(0xc8);
-	if(err != CMD_RET_SUCCESS)
-	{
-		 while(1);
-	}
-	else
-	{
-		 xWriteCH375Data(0xc1);
-		 while(1);
-	}
 	gErr = err;
-#endif
+
+//	OSTimeDlyHMSM(0, 0, 1, 0);
+
 	while(1)
 	{
 	  	while(CH375DiskStatus != DISK_CONNECT) 
 			xQueryInterrupt();
 		OSTimeDlyHMSM(0, 0, 0, 200);
-		
+#if 1		
 		for(i = 0; i < 5; i++)
 		{
+			Delay_Ms(100);
 			if(CH375DiskReady() == ERR_SUCCESS)
 			{
 				break;
-			}
-			OSTimeDlyHMSM(0, 0, 0, 100);			
+			}			
 		}
-
+#endif
 		mStrcpy((char*)mCmdParam.Open.mPathName, "/TEST.TXT");
 		err = CH375FileOpen();
 		if(err != ERR_SUCCESS)
