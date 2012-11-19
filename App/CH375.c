@@ -121,80 +121,74 @@ static void Delay_Ms(u16 myMs)
 
 void xDelay100uS( void )
 {
-	Delay_Us(200);
+	Delay_Us(100);
 }
 
 void xDelayAfterWrite( void )			/* Ð´²Ù×÷ºóÑÓÊ± */
 {
-	Delay_Us(2000);
+	Delay_Us(200);
 }
 
 void xWriteCH375Cmd( UINT8 mCmd )
 {
-    Delay_Us(4);
+    Delay_Us(2);
     CH375_WriteData(mCmd);
-    Delay_Us(4);
     CH375_Set_A0(1);
     CH375_Set_CS(0);
     CH375_Set_WR(0);
-    Delay_Us(10);
+    Delay_Us(5);
     CH375_Set_WR(1);
-    Delay_Us(10);
+    Delay_Us(0);
     CH375_Set_CS(1);
-    CH375_Set_A0(0);
-    CH375_WriteData(0xff);
-    Delay_Us(4);
-}
-
-void xWriteCH375Data( UINT8 mData )
-{
-    Delay_Us(4);
-    CH375_WriteData(mData);
-    Delay_Us(4);
-    CH375_Set_A0(0);
-    CH375_Set_CS(0);
-    CH375_Set_WR(0);
-    Delay_Us(10);
-    CH375_Set_WR(1);
-    Delay_Us(10);
-    CH375_Set_CS(1);
-    CH375_Set_A0(0);
-    CH375_WriteData(0xff);
-    Delay_Us(4);	
-}
-
-UINT8 xReadCH375Data( void )
-{
-    UINT8 data;
-    
-    Delay_Us(4);
-    CH375_WriteData(0xff);
-    CH375_Set_A0(0);
-    CH375_Set_CS(0);
-    CH375_Set_RD(0);
-    Delay_Us(10);
-    data = CH375_ReadData();	
-    CH375_Set_RD(1);
-    CH375_Set_CS(1);
-    Delay_Us(4);
-    return data;
+    Delay_Us(2);
 }
 
 u8 xReadCH375Cmd(void)
 {
     UINT8 data;
     
-    Delay_Us(4);
+    Delay_Us(2);
     CH375_WriteData(0xff);
     CH375_Set_A0(1);
     CH375_Set_CS(0);
     CH375_Set_RD(0);
-    Delay_Us(10);
+    Delay_Us(0);
     data = CH375_ReadData();	
     CH375_Set_RD(1);
     CH375_Set_CS(1);
-    Delay_Us(4);
+    Delay_Us(2);
     return data;	
+}
+
+void xWriteCH375Data( UINT8 mData )
+{
+    Delay_Us(2);
+    CH375_WriteData(mData);
+    CH375_Set_A0(0);
+    CH375_Set_CS(0);
+    CH375_Set_WR(0);
+    Delay_Us(5);
+    CH375_Set_WR(1);
+    Delay_Us(0);
+    CH375_Set_CS(1);
+    Delay_Us(2);	
+}
+
+UINT8 xReadCH375Data( void )
+{
+    UINT8 data;
+    
+    Delay_Us(2);
+    CH375_WriteData(0xff);
+    CH375_Set_A0(0);
+    CH375_Set_CS(0);
+    CH375_Set_RD(0);
+    Delay_Us(0);
+    data = CH375_ReadData();	
+    CH375_Set_RD(1);
+    CH375_Set_CS(1);
+    Delay_Us(2);
+    return data;
 }
 
 UINT8 gErr = 0;
@@ -274,14 +268,11 @@ void CH375_Test(void)
 
 	CH375_PortInit();
 
-	xWriteCH375Cmd(CMD_RESET_ALL);
-	OSTimeDlyHMSM(0, 0, 1, 0);
 
 	err = CH375LibInit();
 
 	gErr = err;
 
-	OSTimeDlyHMSM(0, 0, 1, 0);
 
 	while(1)
 	{
